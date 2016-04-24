@@ -12,10 +12,12 @@ namespace DesktopChara
 {
     public partial class Form1 : Form
     {
+        private Random rnd;
         private File file;
         private Point lastMousePosition;
         private bool mouseCapture;
         private String lasttype;
+        private int lastno;
 
         public Form1()
         {
@@ -24,6 +26,7 @@ namespace DesktopChara
             timer.Tick += new EventHandler(UpdateTime);
             timer.Interval = 1000;
             timer.Enabled = true;
+            rnd = new Random();
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -78,11 +81,16 @@ namespace DesktopChara
             {
                 case MouseButtons.Right:
                     this.mouseCapture = false;
-                    show(file.GetPath(lasttype,0));
+                    show(file.GetPath(lasttype,lastno));
                     break;
                 case MouseButtons.Left:
-                    if (Program.type == "general") show(file.GetPath("smile", 0));
-                    else if (Program.type == "smile" || Program.type == "change") show(file.GetPath("general", 0));
+                    if (Program.type == "general")
+                    {
+                        int no = rnd.Next(7);
+                        show(file.GetPath("random", no));
+                        lastno = no;
+                    }
+                    else if (Program.type == "random" || Program.type == "change") show(file.GetPath("general", 0));
                     else if (Program.type == "start") show(file.GetPath("change", 0));
                     break;
             }

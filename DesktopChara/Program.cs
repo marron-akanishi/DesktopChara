@@ -45,7 +45,11 @@ namespace DesktopChara
 
         public File()
         {
-            basepath = basepath.Replace("DesktopChara.EXE", @"media\Resize\");
+#if DEBUG
+            basepath = basepath.Replace("DesktopChara.EXE", @"media\");
+#else
+            basepath = basepath.Replace("DesktopChara.exe", @"media\");
+#endif
             //CSVファイルの名前
             string csvFileName = "filelist.csv";
 
