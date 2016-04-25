@@ -61,6 +61,7 @@ namespace DesktopChara
             if (!hit)
             {
                 MessageBox.Show("日本語認識が利用できません。\r\n日本語音声認識 MSSpeech_SR_ja-JP_TELE をインストールしてください。\r\n");
+                Application.Exit();
             }
 
             //マイクから拾ってね。
@@ -109,6 +110,7 @@ namespace DesktopChara
             if (!hit)
             {
                 MessageBox.Show("日本語認識が利用できません。\r\n日本語音声認識 MSSpeech_SR_ja-JP_TELE をインストールしてください。\r\n");
+                Application.Exit();
             }
 
             //マイクから拾ってね。
@@ -357,7 +359,6 @@ namespace DesktopChara
         }
 
         //マイクから読み取るため、マイク用のデバイスを指定する.
-        // C++ だと SpCreateDefaultObjectFromCategoryId ヘルパーがあるんだけど、C#だとないんだなこれが。
         private SpeechLib.SpObjectToken CreateMicrofon()
         {
             SpeechLib.SpObjectTokenCategory objAudioTokenCategory = new SpeechLib.SpObjectTokenCategory();
@@ -370,39 +371,39 @@ namespace DesktopChara
         //音声認識分岐
         private void SpeechTextBranch(string speechtext)
         {
-            if(speechtext == "プログラムを実行したい")
+            switch(speechtext)
             {
-                show(filelist.GetPath("search", 0));
-                label1.Text = "何を実行する？";
-                textBox1.Location = new Point(12, 43);
-                button1.Location = new Point(136, 40);
-                textBox1.Visible = true;
-                button1.Visible = true;
-                timer.Enabled = false;
-                mode = "file";
-            }
-            else if(speechtext == "時計に戻して")
-            {
-                label1_MouseUp(null, null);
-            }
-            else if(speechtext == "君の名前は")
-            {
-                show(filelist.GetPath("tere", 0));
-                label1.Text = "鳥海 有栖だよ";
-                mode = "name";
-                this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
-            }
-            else if(speechtext == "終了")
-            {
-                label1.Text = "終了処理中";
-                DialogResult result = MessageBox.Show("終了しますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-                if (result == DialogResult.Yes)
-                {
-                    RegSave();
-                    Application.Exit();
-                }
-                mode = "exit";
-                label1_MouseUp(null, null);
+                case "プログラムを実行したい":
+                    show(filelist.GetPath("search", 0));
+                    label1.Text = "何を実行する？";
+                    textBox1.Location = new Point(12, 43);
+                    button1.Location = new Point(136, 40);
+                    textBox1.Visible = true;
+                    button1.Visible = true;
+                    timer.Enabled = false;
+                    mode = "file";
+                    break;
+                case "時計に戻して":
+                    label1_MouseUp(null, null);
+                    break;
+                case "君の名前は":
+                    show(filelist.GetPath("tere", 0));
+                    label1.Text = "鳥海 有栖だよ";
+                    mode = "name";
+                    this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
+                    break;
+                case "終了":
+                    label1.Text = "終了しちゃうの？";
+                    show(filelist.GetPath("naki", 0));
+                    DialogResult result = MessageBox.Show("終了しますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                    if (result == DialogResult.Yes)
+                    {
+                        RegSave();
+                        Application.Exit();
+                    }
+                    mode = "exit";
+                    label1_MouseUp(null, null);
+                    break;
             }
         }
 
@@ -411,19 +412,12 @@ namespace DesktopChara
             if (e != null && e.Button == MouseButtons.Right) return;
             if (mode == "clock")
             {
-                /*label1.Text = @"何を実行する？";
-                textBox1.Location = new Point(12, 43);
-                button1.Location = new Point(136, 40);
-                textBox1.Visible = true;
-                button1.Visible = true;
-                timer.Enabled = false;
-                mode = "file";*/
                 label1.Text = "どうしたの？";
                 timer.Enabled = false;
                 if(Program.type != "surprise") lasttype = Program.type;
                 show(filelist.GetPath("general", 1));
                 mode = "voice";
-                //音声認識開始。(トップレベルのオブジェクトの名前で SpeechRuleState.SGDSActive を指定する.)
+                //音声認識開始
                 this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
             }
             else
