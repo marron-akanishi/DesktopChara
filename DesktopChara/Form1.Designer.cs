@@ -44,7 +44,7 @@
             this.pictureBox1.Size = new System.Drawing.Size(200, 104);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
+            this.pictureBox1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.label1_MouseUp);
             // 
             // pictureBox2
             // 
@@ -68,7 +68,7 @@
             this.label1.Size = new System.Drawing.Size(179, 26);
             this.label1.TabIndex = 2;
             this.label1.Text = "9文字x2行ぐらい？";
-            this.label1.Click += new System.EventHandler(this.pictureBox1_Click);
+            this.label1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.label1_MouseUp);
             // 
             // button1
             // 
