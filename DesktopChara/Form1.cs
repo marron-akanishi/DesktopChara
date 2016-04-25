@@ -129,6 +129,7 @@ namespace DesktopChara
                 delegate (int streamNumber, object streamPosition, SpeechLib.ISpeechRecoResult isrr)
                 {
                     label1.Text = "？？";
+                    show(filelist.GetPath("what", 0));
                 };
 
             //言語モデルの作成
@@ -218,7 +219,11 @@ namespace DesktopChara
                         show(filelist.GetPath("general", 0));
                         lastno = 0;
                     }
-                    else if (Program.type == "start") show(filelist.GetPath("change", 0));
+                    else if (Program.type == "start")
+                    {
+                        show(filelist.GetPath("change", 0));
+                        lastno = 0;
+                    }
                     break;
             }
         }
@@ -239,16 +244,19 @@ namespace DesktopChara
                 case Keys.F2:
                     //音声認識ストップ
                     this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
-                    this.AlwaysGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSInactive);
+                    this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSInactive);
                     //現在の位置を一旦保存
                     RegSave();
+                    lasttype = Program.type;
+                    show(filelist.GetPath("kusonemi", 0));
                     Form2 setting = new Form2();
                     setting.ShowDialog(this);
                     //変更された情報を読み込む
                     RegLoad();
+                    show(filelist.GetPath(lasttype, lastno));
                     //音声認識再開
                     if(mode == "clock") this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
-                    else if(mode == "voice") this.AlwaysGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
+                    else if(mode == "voice") this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
                     break;
                 case Keys.Escape:
                     DialogResult result = MessageBox.Show("終了しますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -364,7 +372,8 @@ namespace DesktopChara
         {
             if(speechtext == "プログラムを実行したい")
             {
-                label1.Text = @"何を実行する？";
+                show(filelist.GetPath("search", 0));
+                label1.Text = "何を実行する？";
                 textBox1.Location = new Point(12, 43);
                 button1.Location = new Point(136, 40);
                 textBox1.Visible = true;
@@ -378,8 +387,10 @@ namespace DesktopChara
             }
             else if(speechtext == "君の名前は")
             {
+                show(filelist.GetPath("tere", 0));
                 label1.Text = "鳥海 有栖だよ";
-                mode = "name"; 
+                mode = "name";
+                this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
             }
             else if(speechtext == "終了")
             {
@@ -409,6 +420,8 @@ namespace DesktopChara
                 mode = "file";*/
                 label1.Text = "どうしたの？";
                 timer.Enabled = false;
+                if(Program.type != "surprise") lasttype = Program.type;
+                show(filelist.GetPath("general", 1));
                 mode = "voice";
                 //音声認識開始。(トップレベルのオブジェクトの名前で SpeechRuleState.SGDSActive を指定する.)
                 this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
@@ -422,6 +435,7 @@ namespace DesktopChara
                 button1.Visible = false;
                 UpdateTime(null, null);
                 timer.Enabled = true;
+                show(filelist.GetPath(lasttype, lastno));
                 this.Focus();
                 mode = "clock";
                 //音声認識開始
