@@ -12,7 +12,8 @@ namespace DesktopChara
 {
     public partial class Form2 : Form
     {
-        private File file;
+        private IniFile skindata;
+        private string skinname;
 
         public Form2()
         {
@@ -39,10 +40,16 @@ namespace DesktopChara
 
         private void Form2_Load(object sender, EventArgs e)
         {
-            file = new File();
-            this.pictureBox1.Image = Image.FromFile(file.GetPath("icon",0));
-            Microsoft.Win32.RegistryKey regkey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\test\DesktopChara", false);
-            this.Location = new Point((int)regkey.GetValue("posX") - this.Size.Width, (int)regkey.GetValue("posY") - this.Size.Height);
+            //レジストリの読み込み
+            this.Location = new Point((int)Program.regkey.GetValue("posX") - this.Size.Width, (int)Program.regkey.GetValue("posY") - this.Size.Height);
+            //スキンデータの読み込み
+            string path = Program.basepath + "skin.ini";
+            skindata = new IniFile(path);
+            skinname = skindata.GetValue("skininfo","name","スキン名");
+            string skinicon = skindata.GetValue("skininfo", "icon", "icon.png");
+            path = path.Replace("skin.ini",skinicon);
+            label2.Text = skinname;
+            pictureBox1.Image = Image.FromFile(path);
         }
     }
 }

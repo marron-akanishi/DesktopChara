@@ -13,16 +13,18 @@ namespace DesktopChara
     public partial class Form1 : Form
     {
         private Random rnd;
-        private File file;
+        private Filelist filelist;
         private Point lastMousePosition;
         private bool mouseCapture;
         private String lasttype;
-        private int lastno;
+        private int lastno  = 0;
+        private string mode = "clock";
+        private Timer timer;
 
         public Form1()
         {
             InitializeComponent();
-            Timer timer = new Timer();
+            timer = new Timer();
             timer.Tick += new EventHandler(UpdateTime);
             timer.Interval = 1000;
             timer.Enabled = true;
@@ -32,9 +34,11 @@ namespace DesktopChara
         private void Form1_Load(object sender, EventArgs e)
         {
             RegLoad();
+            this.textBox1.Visible = false;
+            this.button1.Visible = false;
             this.label1.Text = "";
-            file = new File();
-            string path = file.GetPath("start",0);
+            filelist = new Filelist();
+            string path = filelist.GetPath("start",0);
             show(path);
             this.TopMost = true;
         }
@@ -50,7 +54,7 @@ namespace DesktopChara
 
                     //この間だけ画像変更
                     lasttype = Program.type;
-                    show(file.GetPath("surprise",0));
+                    show(filelist.GetPath("surprise",0));
                     break;
             }
         }
@@ -81,17 +85,22 @@ namespace DesktopChara
             {
                 case MouseButtons.Right:
                     this.mouseCapture = false;
-                    show(file.GetPath(lasttype,lastno));
+                    show(filelist.GetPath(lasttype,lastno));
                     break;
                 case MouseButtons.Left:
+                    if (this.mouseCapture == true) break;
                     if (Program.type == "general")
                     {
                         int no = rnd.Next(7);
-                        show(file.GetPath("random", no));
+                        show(filelist.GetPath("random", no));
                         lastno = no;
                     }
-                    else if (Program.type == "random" || Program.type == "change") show(file.GetPath("general", 0));
-                    else if (Program.type == "start") show(file.GetPath("change", 0));
+                    else if (Program.type == "random" || Program.type == "change")
+                    {
+                        show(filelist.GetPath("general", 0));
+                        lastno = 0;
+                    }
+                    else if (Program.type == "start") show(filelist.GetPath("change", 0));
                     break;
             }
         }
@@ -125,6 +134,10 @@ namespace DesktopChara
                         Application.Exit();
                     }
                     break;
+                case Keys.ControlKey:
+                    this.mouseCapture = false;
+                    show(filelist.GetPath(lasttype, lastno));
+                    break;
             }
         }
 
@@ -136,7 +149,7 @@ namespace DesktopChara
             this.pictureBox2.Image = Image.FromFile(@path);
             //吹き出し設置
             if (this.pictureBox1.Image != null) this.pictureBox1.Image.Dispose();
-            this.pictureBox1.Image = Image.FromFile(file.GetPath("ballon", 0));
+            this.pictureBox1.Image = Image.FromFile(filelist.GetPath("ballon", 0));
             //ウィンドウ透過
             this.TransparencyKey = BackColor;
         }
@@ -163,16 +176,53 @@ namespace DesktopChara
         //レジストリへの書き込み
         private void RegSave()
         {
-            Microsoft.Win32.RegistryKey regkey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\test\DesktopChara");
-            regkey.SetValue("posX", this.Location.X);
-            regkey.SetValue("posY", this.Location.Y);
+            Program.regkey.SetValue("posX", this.Location.X);
+            Program.regkey.SetValue("posY", this.Location.Y);
+            Program.regkey.SetValue("skin", Program.skinfolder);
         }
 
         //レジストリの読み込み
         private void RegLoad()
         {
-            Microsoft.Win32.RegistryKey regkey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\test\DesktopChara", false);
-            this.Location = new Point((int)regkey.GetValue("posX"), (int)regkey.GetValue("posY"));
+            if(Program.regkey == null)
+            {
+                this.Location = new Point(100, 100);
+                return;
+            }
+            this.Location = new Point((int)Program.regkey.GetValue("posX"), (int)Program.regkey.GetValue("posY"));
+        }
+
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.ControlKey:
+                    this.lastMousePosition = Control.MousePosition;
+                    this.mouseCapture = true;
+                    //この間だけ画像変更
+                    if(Program.type != "surprise") lasttype = Program.type;
+                    show(filelist.GetPath("surprise", 0));
+                    break;
+            }
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+            if(mode == "clock")
+            {
+                label1.Text = @"ファイル名を入力してね";
+                textBox1.Visible = true;
+                button1.Visible = true;
+                timer.Enabled = false;
+                mode = "file";
+            }
+            else
+            {
+                textBox1.Visible = false;
+                button1.Visible = false;
+                timer.Enabled = true;
+                mode = "clock";
+            }
         }
     }
 }
