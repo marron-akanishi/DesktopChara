@@ -65,24 +65,26 @@
             this.label1.Font = new System.Drawing.Font("Meiryo UI", 15.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.label1.Location = new System.Drawing.Point(12, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(230, 35);
+            this.label1.Size = new System.Drawing.Size(179, 26);
             this.label1.TabIndex = 2;
             this.label1.Text = "9文字x2行ぐらい？";
+            this.label1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(139, 63);
+            this.button1.Location = new System.Drawing.Point(136, 60);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(48, 24);
             this.button1.TabIndex = 3;
             this.button1.Text = "実行";
             this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // textBox1
             // 
             this.textBox1.Location = new System.Drawing.Point(12, 63);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(118, 22);
+            this.textBox1.Size = new System.Drawing.Size(118, 19);
             this.textBox1.TabIndex = 4;
             // 
             // Form1

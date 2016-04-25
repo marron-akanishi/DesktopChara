@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace DesktopChara
 {
@@ -34,9 +35,9 @@ namespace DesktopChara
         private void Form1_Load(object sender, EventArgs e)
         {
             RegLoad();
-            this.textBox1.Visible = false;
-            this.button1.Visible = false;
-            this.label1.Text = "";
+            textBox1.Visible = false;
+            button1.Visible = false;
+            label1.Text = "";
             filelist = new Filelist();
             string path = filelist.GetPath("start",0);
             show(path);
@@ -145,11 +146,11 @@ namespace DesktopChara
         public void show(string path)
         {
             //キャラ設置
-            if (this.pictureBox2.Image != null) this.pictureBox2.Image.Dispose();
-            this.pictureBox2.Image = Image.FromFile(@path);
+            if (pictureBox2.Image != null) pictureBox2.Image.Dispose();
+            pictureBox2.Image = Image.FromFile(@path);
             //吹き出し設置
-            if (this.pictureBox1.Image != null) this.pictureBox1.Image.Dispose();
-            this.pictureBox1.Image = Image.FromFile(filelist.GetPath("ballon", 0));
+            if (pictureBox1.Image != null) pictureBox1.Image.Dispose();
+            pictureBox1.Image = Image.FromFile(filelist.GetPath("ballon", 0));
             //ウィンドウ透過
             this.TransparencyKey = BackColor;
         }
@@ -170,7 +171,7 @@ namespace DesktopChara
         public void UpdateTime(object sender, EventArgs e)
         {
             DateTime dtNow = DateTime.Now;
-            this.label1.Text = dtNow.ToString("yyyy/MM/dd") + "\n" + dtNow.ToString("HH:mm:ss");
+            label1.Text = dtNow.ToString("yyyy/MM/dd") + "\n" + dtNow.ToString("HH:mm:ss");
         }
 
         //レジストリへの書き込み
@@ -210,7 +211,9 @@ namespace DesktopChara
         {
             if(mode == "clock")
             {
-                label1.Text = @"ファイル名を入力してね";
+                label1.Text = @"何を実行する？";
+                textBox1.Location = new Point(12, 43);
+                button1.Location = new Point(136, 40);
                 textBox1.Visible = true;
                 button1.Visible = true;
                 timer.Enabled = false;
@@ -220,8 +223,27 @@ namespace DesktopChara
             {
                 textBox1.Visible = false;
                 button1.Visible = false;
+                UpdateTime(null, null);
                 timer.Enabled = true;
+                this.Focus();
                 mode = "clock";
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (textBox1.Text != @"")
+            {
+                try
+                {
+                    Process.Start(textBox1.Text);
+                    textBox1.Text = @"";
+                    pictureBox1_Click(null, null);
+                }
+                catch
+                {
+                    MessageBox.Show("実行出来なかったよ\n" + textBox1.Text, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
     }
