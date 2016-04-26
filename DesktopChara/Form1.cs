@@ -109,15 +109,10 @@ namespace DesktopChara
             this.AlwaysRule.Recognition +=
                 delegate (int streamNumber, object streamPosition, SpeechLib.SpeechRecognitionType srt, SpeechLib.ISpeechRecoResult isrr)
                 {
-                    //ここでDictationでマッチした語を見て、 必ず入っていなければいけない文字列がなければ握りつぶす.
-                    /*if (this.MustMatchString.Length >= 1
-                         && this.DictationString.IndexOf(this.MustMatchString) <= -1
-                       )
-                    {//握りつぶす.
-                        return;
-                    }*/
                     //音声認識終了
                     this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
+                    //アクティブにする
+                    this.Focus();
                     label1_MouseUp(null, null);
                 };
             //言語モデルの作成
@@ -596,7 +591,14 @@ namespace DesktopChara
         {
             this.ProgramGrammarRule.CmdSetRuleState("ProgramRule", SpeechRuleState.SGDSInactive);
             DataRow[] rows = list.dt.Select("voice = '" + command + "'");
-            Process.Start((string)rows[0][1]);
+            try
+            {
+                Process.Start((string)rows[0][1]);
+            }
+            catch
+            {
+                MessageBox.Show("実行出来なかったよ\n" + (string)rows[0][1], "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
             label1_MouseUp(null, null);
         }
 
