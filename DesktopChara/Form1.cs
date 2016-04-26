@@ -20,7 +20,7 @@ namespace DesktopChara
         private string mode = "clock";
         private Timer timer;
         private Tokens twitter;
-        //モード切替用
+        //モード切替用(Dictation実装)
         //音声認識オブジェクト
         private SpeechLib.SpInProcRecoContext AlwaysRule = null;
         //音声認識のための言語モデル
@@ -103,19 +103,23 @@ namespace DesktopChara
 
             //マイクから拾ってね。
             this.AlwaysRule.Recognizer.AudioInput = this.CreateMicrofon();
-            //マイクから拾ってね。
-            //this.AlwaysDictation.Recognizer.AudioInput = this.CreateMicrofon();
 
             //音声認識イベントで、デリゲートによるコールバックを受ける.
             //認識完了
             this.AlwaysRule.Recognition +=
                 delegate (int streamNumber, object streamPosition, SpeechLib.SpeechRecognitionType srt, SpeechLib.ISpeechRecoResult isrr)
                 {
+                    //ここでDictationでマッチした語を見て、 必ず入っていなければいけない文字列がなければ握りつぶす.
+                    /*if (this.MustMatchString.Length >= 1
+                         && this.DictationString.IndexOf(this.MustMatchString) <= -1
+                       )
+                    {//握りつぶす.
+                        return;
+                    }*/
                     //音声認識終了
                     this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
                     label1_MouseUp(null, null);
                 };
-
             //言語モデルの作成
             this.AlwaysGrammarRule = this.AlwaysRule.CreateGrammar(0);
 
@@ -180,6 +184,8 @@ namespace DesktopChara
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "プログラムを実行したい");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "ツイートしたい");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "バッテリー残量は");
+            this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "プログラムリスト更新");
+            this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "設定を開いて");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "時計に戻して");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "君の名前は");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "終了");
@@ -338,23 +344,24 @@ namespace DesktopChara
             switch(e.KeyCode)
             {
                 case Keys.F2:
-                    //音声認識ストップ
-                    this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
-                    this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSInactive);
-                    mode = "setting";
-                    //現在の位置を一旦保存
-                    RegSave();
-                    lasttype = Program.type;
-                    show(filelist.GetPath("kusonemi", 0));
-                    Form2 setting = new Form2();
-                    setting.ShowDialog(this);
-                    //変更された情報を読み込む
-                    RegLoad();
-                    InitTwitter();
-                    show(filelist.GetPath(lasttype, lastno));
-                    //音声認識再開
-                    if (mode == "clock") this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
-                    else if (mode == "voice") this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
+                    if (mode == "clock")
+                    {
+                        //音声認識ストップ
+                        this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
+                        mode = "setting";
+                        //現在の位置を一旦保存
+                        RegSave();
+                        lasttype = Program.type;
+                        show(filelist.GetPath("kusonemi", 0));
+                        Form2 setting = new Form2();
+                        setting.ShowDialog(this);
+                        //変更された情報を読み込む
+                        RegLoad();
+                        InitTwitter();
+                        show(filelist.GetPath(lasttype, lastno));
+                        //音声認識再開
+                        this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
+                    }
                     break;
                 case Keys.Escape:
                     DialogResult result = MessageBox.Show("終了しますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -532,6 +539,33 @@ namespace DesktopChara
                     }
                     mode = "battery";
                     this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
+                    break;
+                case "プログラムリスト更新":
+                    label1.Text = "読み直してるよ";
+                    show(filelist.GetPath("sleep", 3));
+                    mode = "refresh";
+                    ProgramSpeechInit();
+                    MessageBox.Show("更新完了");
+                    GC.Collect();
+                    label1_MouseUp(null, null);
+                    break;
+                case "設定を開いて":
+                    label1_MouseUp(null, null);
+                    //音声認識ストップ
+                    this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
+                    mode = "setting";
+                    //現在の位置を一旦保存
+                    RegSave();
+                    lasttype = Program.type;
+                    show(filelist.GetPath("kusonemi", 0));
+                    Form2 setting = new Form2();
+                    setting.ShowDialog(this);
+                    //変更された情報を読み込む
+                    RegLoad();
+                    InitTwitter();
+                    show(filelist.GetPath(lasttype, lastno));
+                    //音声認識再開
+                    this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
                     break;
                 case "時計に戻して":
                     label1_MouseUp(null, null);
