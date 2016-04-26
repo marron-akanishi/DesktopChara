@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using System.Diagnostics;
 using SpeechLib;
+using CoreTweet;
 
 namespace DesktopChara
 {
@@ -16,6 +17,7 @@ namespace DesktopChara
         private int lastno  = 0;
         private string mode = "clock";
         private Timer timer;
+        private Tokens twitter;
         //操作用
         //音声認識オブジェクト
         private SpeechLib.SpInProcRecoContext ControlRule = null;
@@ -34,6 +36,7 @@ namespace DesktopChara
         public Form1()
         {
             InitializeComponent();
+            ShowInTaskbar = false;
             timer = new Timer();
             timer.Tick += new EventHandler(UpdateTime);
             timer.Interval = 1000;
@@ -43,6 +46,30 @@ namespace DesktopChara
             ControlSpeechInit();
         }
 
+        //ツイッター初期化
+        private void InitTwitter()
+        {
+            if((string)Program.regkey.GetValue("APIKey") != "")
+            {
+                try
+                {
+                    twitter = CoreTweet.Tokens.Create((string)Program.regkey.GetValue("APIKey")
+                    , (string)Program.regkey.GetValue("APISecret")
+                    , (string)Program.regkey.GetValue("AccessToken")
+                    , (string)Program.regkey.GetValue("AccessSecret"));
+                    //起動情報ツイート
+                    DateTime dtNow = DateTime.Now;
+                    //twitter.Statuses.Update(new { status = "有栖ちゃんを起動させました\n" + dtNow.ToString("HH:mm:ss") });
+                }
+                catch
+                {
+                    MessageBox.Show("Twitterへの接続に失敗しました", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    twitter = null;
+                }
+            }
+        }
+
+        //音声認識初期化
         private void AlwaysSpeechInit()
         {
             //ルール認識 音声認識オブジェクトの生成
@@ -91,7 +118,6 @@ namespace DesktopChara
             //ルールを反映させる。
             this.AlwaysGrammarRule.Rules.Commit();
         }
-
         private void ControlSpeechInit()
         {
             //ルール認識 音声認識オブジェクトの生成
@@ -143,6 +169,7 @@ namespace DesktopChara
                 SpeechRuleAttributes.SRATopLevel | SpeechRuleAttributes.SRADynamic);
             //認証用文字列の追加.
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "プログラムを実行したい");
+            this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "ツイートしたい");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "時計に戻して");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "君の名前は");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "終了");
@@ -151,6 +178,7 @@ namespace DesktopChara
             this.ControlGrammarRule.Rules.Commit();
         }
 
+        //表示前処理
         private void Form1_Load(object sender, EventArgs e)
         {
             RegLoad();
@@ -161,9 +189,11 @@ namespace DesktopChara
             string path = filelist.GetPath("start",0);
             show(path);
             this.TopMost = true;
+            if(Program.regkey != null) InitTwitter();
             this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
         }
 
+        //マウス動作取得
         private void Form1_MouseDown(object sender, MouseEventArgs e)
         {
             switch (e.Button)
@@ -179,7 +209,6 @@ namespace DesktopChara
                     break;
             }
         }
-
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
             if (this.mouseCapture == false)
@@ -199,7 +228,6 @@ namespace DesktopChara
 
             this.lastMousePosition = mp;
         }
-
         private void Form1_MouseUp(object sender, MouseEventArgs e)
         {
             switch (e.Button)
@@ -229,7 +257,6 @@ namespace DesktopChara
                     break;
             }
         }
-
         private void Form1_MouseCaptureChanged(object sender, EventArgs e)
         {
             if (this.mouseCapture == true && this.Capture == false)
@@ -247,6 +274,7 @@ namespace DesktopChara
                     //音声認識ストップ
                     this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
                     this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSInactive);
+                    mode = "setting";
                     //現在の位置を一旦保存
                     RegSave();
                     lasttype = Program.type;
@@ -255,6 +283,7 @@ namespace DesktopChara
                     setting.ShowDialog(this);
                     //変更された情報を読み込む
                     RegLoad();
+                    InitTwitter();
                     show(filelist.GetPath(lasttype, lastno));
                     //音声認識再開
                     if(mode == "clock") this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
@@ -326,6 +355,7 @@ namespace DesktopChara
             this.Location = new Point((int)Program.regkey.GetValue("posX"), (int)Program.regkey.GetValue("posY"));
         }
 
+        //長押しキー取得
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
@@ -340,10 +370,21 @@ namespace DesktopChara
             }
         }
 
+        //実行ボタン
         private void button1_Click(object sender, EventArgs e)
         {
             if (textBox1.Text != @"")
             {
+#if DEBUG
+                if(mode == "voice")
+                {
+                    SpeechTextBranch(textBox1.Text);
+                    textBox1.Visible = false;
+                    button1.Visible = false;
+                    textBox1.Text = @"";
+                    return;
+                }
+#endif
                 try
                 {
                     Process.Start(textBox1.Text);
@@ -380,8 +421,27 @@ namespace DesktopChara
                     button1.Location = new Point(136, 40);
                     textBox1.Visible = true;
                     button1.Visible = true;
-                    timer.Enabled = false;
                     mode = "file";
+                    break;
+                case "ツイートしたい":
+                    show(filelist.GetPath("chair", 0));
+                    label1.Text = "なんてつぶやく？";
+                    mode = "twitter";
+                    RegSave();
+                    Form3 tweet = new Form3();
+                    tweet.ShowDialog(this);
+                    if (Program.tweetdata != "" && twitter != null)
+                    {
+                        try
+                        {
+                            twitter.Statuses.Update(new { status = Program.tweetdata });
+                        }
+                        catch
+                        {
+                            MessageBox.Show("ツイートに失敗しました", "エラー", MessageBoxButtons.OK,MessageBoxIcon.Error);
+                        }
+                    }
+                    label1_MouseUp(null, null);
                     break;
                 case "時計に戻して":
                     label1_MouseUp(null, null);
@@ -407,6 +467,7 @@ namespace DesktopChara
             }
         }
 
+        //テキストクリック
         private void label1_MouseUp(object sender, MouseEventArgs e)
         {
             if (e != null && e.Button == MouseButtons.Right) return;
@@ -417,6 +478,13 @@ namespace DesktopChara
                 if(Program.type != "surprise") lasttype = Program.type;
                 show(filelist.GetPath("general", 1));
                 mode = "voice";
+#if DEBUG
+                //デバッグ用入力ボックス
+                textBox1.Location = new Point(12, 43);
+                button1.Location = new Point(136, 40);
+                textBox1.Visible = true;
+                button1.Visible = true;
+#endif
                 //音声認識開始
                 this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
             }
@@ -433,6 +501,23 @@ namespace DesktopChara
                 this.Focus();
                 mode = "clock";
                 //音声認識開始
+                this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
+            }
+        }
+
+        //通知領域アイコンクリック
+        private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (this.Visible && mode == "clock")
+            {
+                this.Visible = false;
+                this.WindowState = FormWindowState.Minimized;
+                this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
+            }
+            else
+            {
+                this.Visible = true;
+                this.WindowState = FormWindowState.Normal;
                 this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
             }
         }

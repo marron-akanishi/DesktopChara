@@ -15,6 +15,7 @@ namespace DesktopChara
         public static Microsoft.Win32.RegistryKey regkey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\test\DesktopChara",true);
         public static string skinfolder = "default";
         public static string type = @"start";
+        public static string tweetdata = "";
 
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。
