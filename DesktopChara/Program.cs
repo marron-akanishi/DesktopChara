@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Collections;
 using System.Windows.Forms;
 using System.Data;
 using System.Runtime.InteropServices;
@@ -77,6 +75,40 @@ namespace DesktopChara
             }
             if (type != "ballon") Program.type = type;
             return path;
+        }
+    }
+
+    //プログラムのリスト
+    //無駄でしかない
+    public class Programlist
+    {
+        public DataTable dt = new DataTable();
+        public ArrayList voicelist = new ArrayList();
+
+        public Programlist()
+        {
+            //CSVファイルの名前
+            string csvFileName = "program.csv";
+
+            //接続文字列
+            string conString = "Provider=Microsoft.Jet.OLEDB.4.0;Data Source="
+                + Program.basepath + ";Extended Properties=\"text;HDR=Yes;FMT=Delimited\"";
+            System.Data.OleDb.OleDbConnection con =
+                new System.Data.OleDb.OleDbConnection(conString);
+
+            string commText = "SELECT * FROM [" + csvFileName + "]";
+            System.Data.OleDb.OleDbDataAdapter da =
+                new System.Data.OleDb.OleDbDataAdapter(commText, con);
+
+            //DataTableに格納する
+            da.Fill(dt);
+
+            //DataTable内のVoiceデータをArrayに収納
+            for(int i=0;i < dt.Rows.Count; i++)
+            {
+                DataRow[] rows = dt.Select();
+                voicelist.Add((string)rows[i][0]);
+            }
         }
     }
 

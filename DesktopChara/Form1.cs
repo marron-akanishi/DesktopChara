@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using SpeechLib;
 using CoreTweet;
+using System.Data;
 
 namespace DesktopChara
 {
@@ -11,6 +12,7 @@ namespace DesktopChara
     {
         private Random rnd;
         private Filelist filelist;
+        private Programlist list;
         private Point lastMousePosition;
         private bool mouseCapture;
         private String lasttype;
@@ -18,13 +20,6 @@ namespace DesktopChara
         private string mode = "clock";
         private Timer timer;
         private Tokens twitter;
-        //操作用
-        //音声認識オブジェクト
-        private SpeechLib.SpInProcRecoContext ControlRule = null;
-        //音声認識のための言語モデル
-        private SpeechLib.ISpeechRecoGrammar ControlGrammarRule = null;
-        //音声認識のための言語モデルのルールのトップレベルオブジェクト.
-        private SpeechLib.ISpeechGrammarRule ControlGrammarRuleGrammarRule = null;
         //モード切替用
         //音声認識オブジェクト
         private SpeechLib.SpInProcRecoContext AlwaysRule = null;
@@ -32,6 +27,20 @@ namespace DesktopChara
         private SpeechLib.ISpeechRecoGrammar AlwaysGrammarRule = null;
         //音声認識のための言語モデルのルールのトップレベルオブジェクト.
         private SpeechLib.ISpeechGrammarRule AlwaysGrammarRuleGrammarRule = null;
+        //操作用
+        //音声認識オブジェクト
+        private SpeechLib.SpInProcRecoContext ControlRule = null;
+        //音声認識のための言語モデル
+        private SpeechLib.ISpeechRecoGrammar ControlGrammarRule = null;
+        //音声認識のための言語モデルのルールのトップレベルオブジェクト.
+        private SpeechLib.ISpeechGrammarRule ControlGrammarRuleGrammarRule = null;
+        //プログラム起動用
+        //音声認識オブジェクト
+        private SpeechLib.SpInProcRecoContext ProgramRule = null;
+        //音声認識のための言語モデル
+        private SpeechLib.ISpeechRecoGrammar ProgramGrammarRule = null;
+        //音声認識のための言語モデルのルールのトップレベルオブジェクト.
+        private SpeechLib.ISpeechGrammarRule ProgramGrammarRuleGrammarRule = null;
 
         public Form1()
         {
@@ -44,6 +53,7 @@ namespace DesktopChara
             rnd = new Random();
             AlwaysSpeechInit();
             ControlSpeechInit();
+            ProgramSpeechInit();
         }
 
         //ツイッター初期化
@@ -93,13 +103,14 @@ namespace DesktopChara
 
             //マイクから拾ってね。
             this.AlwaysRule.Recognizer.AudioInput = this.CreateMicrofon();
+            //マイクから拾ってね。
+            //this.AlwaysDictation.Recognizer.AudioInput = this.CreateMicrofon();
 
             //音声認識イベントで、デリゲートによるコールバックを受ける.
             //認識完了
             this.AlwaysRule.Recognition +=
                 delegate (int streamNumber, object streamPosition, SpeechLib.SpeechRecognitionType srt, SpeechLib.ISpeechRecoResult isrr)
                 {
-                    string strText = isrr.PhraseInfo.GetText(0, -1, true);
                     //音声認識終了
                     this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
                     label1_MouseUp(null, null);
@@ -148,8 +159,6 @@ namespace DesktopChara
                 delegate (int streamNumber, object streamPosition, SpeechLib.SpeechRecognitionType srt, SpeechLib.ISpeechRecoResult isrr)
                 {
                     string strText = isrr.PhraseInfo.GetText(0, -1, true);
-                    //音声認識終了
-                    this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSInactive);
                     SpeechTextBranch(strText);
                 };
             //認識失敗
@@ -170,12 +179,70 @@ namespace DesktopChara
             //認証用文字列の追加.
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "プログラムを実行したい");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "ツイートしたい");
+            this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "バッテリー残量は");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "時計に戻して");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "君の名前は");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "終了");
 
             //ルールを反映させる。
             this.ControlGrammarRule.Rules.Commit();
+        }
+        private void ProgramSpeechInit()
+        {
+            //ルール認識 音声認識オブジェクトの生成
+            this.ProgramRule = new SpeechLib.SpInProcRecoContext();
+            bool hit = false;
+            foreach (SpObjectToken recoperson in this.ProgramRule.Recognizer.GetRecognizers()) //'Go through the SR enumeration
+            {
+                string language = recoperson.GetAttribute("Language");
+                if (language == "411")
+                {//日本語を聴き取れる人だ
+                    this.ProgramRule.Recognizer.Recognizer = recoperson; //君に聞いていて欲しい
+                    hit = true;
+                    break;
+                }
+            }
+            if (!hit)
+            {
+                MessageBox.Show("日本語認識が利用できません。\r\n日本語音声認識 MSSpeech_SR_ja-JP_TELE をインストールしてください。\r\n");
+                Application.Exit();
+            }
+
+            //マイクから拾ってね。
+            this.ProgramRule.Recognizer.AudioInput = this.CreateMicrofon();
+
+            //音声認識イベントで、デリゲートによるコールバックを受ける.
+            //認識完了
+            this.ProgramRule.Recognition +=
+                delegate (int streamNumber, object streamPosition, SpeechLib.SpeechRecognitionType srt, SpeechLib.ISpeechRecoResult isrr)
+                {
+                    string strText = isrr.PhraseInfo.GetText(0, -1, true);
+                    ProgramRun(strText);
+                };
+            //認識失敗
+            this.ProgramRule.FalseRecognition +=
+                delegate (int streamNumber, object streamPosition, SpeechLib.ISpeechRecoResult isrr)
+                {
+                    label1.Text = "？？";
+                    show(filelist.GetPath("what", 0));
+                };
+
+            //言語モデルの作成
+            this.ProgramGrammarRule = this.ProgramRule.CreateGrammar(0);
+
+            this.ProgramGrammarRule.Reset(0);
+            //言語モデルのルールのトップレベルを作成する.
+            this.ProgramGrammarRuleGrammarRule = this.ProgramGrammarRule.Rules.Add("ProgramRule",
+                SpeechRuleAttributes.SRATopLevel | SpeechRuleAttributes.SRADynamic);
+            //認証用文字列の追加.
+            list = new Programlist();
+            foreach(string voice in list.voicelist)
+            {
+                this.ProgramGrammarRuleGrammarRule.InitialState.AddWordTransition(null, voice);
+            }
+
+            //ルールを反映させる。
+            this.ProgramGrammarRule.Rules.Commit();
         }
 
         //表示前処理
@@ -286,8 +353,8 @@ namespace DesktopChara
                     InitTwitter();
                     show(filelist.GetPath(lasttype, lastno));
                     //音声認識再開
-                    if(mode == "clock") this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
-                    else if(mode == "voice") this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
+                    if (mode == "clock") this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
+                    else if (mode == "voice") this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
                     break;
                 case Keys.Escape:
                     DialogResult result = MessageBox.Show("終了しますか？", "確認", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
@@ -379,8 +446,6 @@ namespace DesktopChara
                 if(mode == "voice")
                 {
                     SpeechTextBranch(textBox1.Text);
-                    textBox1.Visible = false;
-                    button1.Visible = false;
                     textBox1.Text = @"";
                     return;
                 }
@@ -406,13 +471,16 @@ namespace DesktopChara
             objAudioTokenCategory.SetId(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech Server\v11.0\AudioInput", false);
             SpeechLib.SpObjectToken objAudioToken = new SpeechLib.SpObjectToken();
             objAudioToken.SetId(objAudioTokenCategory.Default, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech Server\v11.0\AudioInput", false);
+            //return null;
             return objAudioToken;
         }
         
         //音声認識分岐
         private void SpeechTextBranch(string speechtext)
         {
-            switch(speechtext)
+            //音声認識終了
+            this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSInactive);
+            switch (speechtext)
             {
                 case "プログラムを実行したい":
                     show(filelist.GetPath("search", 0));
@@ -422,6 +490,7 @@ namespace DesktopChara
                     textBox1.Visible = true;
                     button1.Visible = true;
                     mode = "file";
+                    this.ProgramGrammarRule.CmdSetRuleState("ProgramRule", SpeechRuleState.SGDSActive);
                     break;
                 case "ツイートしたい":
                     show(filelist.GetPath("chair", 0));
@@ -432,6 +501,7 @@ namespace DesktopChara
                     tweet.ShowDialog(this);
                     if (Program.tweetdata != "" && twitter != null)
                     {
+                        label1.Text = "つぶやき中";
                         try
                         {
                             twitter.Statuses.Update(new { status = Program.tweetdata });
@@ -442,6 +512,26 @@ namespace DesktopChara
                         }
                     }
                     label1_MouseUp(null, null);
+                    break;
+                case "バッテリー残量は":
+                    show(filelist.GetPath("find", 0));
+#if DEBUG
+                    textBox1.Visible = false;
+                    button1.Visible = false;
+                    textBox1.Text = "";
+#endif
+                    PowerLineStatus pls = SystemInformation.PowerStatus.PowerLineStatus;
+                    if (pls == PowerLineStatus.Online)
+                    {
+                        label1.Text = "AC電源駆動だよ";
+                    }
+                    else
+                    {
+                        float blp = SystemInformation.PowerStatus.BatteryLifePercent;
+                        label1.Text = "バッテリー残量は\n" + blp * 100 + "% だよ";
+                    }
+                    mode = "battery";
+                    this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
                     break;
                 case "時計に戻して":
                     label1_MouseUp(null, null);
@@ -465,6 +555,15 @@ namespace DesktopChara
                     label1_MouseUp(null, null);
                     break;
             }
+        }
+
+        //プログラム実行音声認識
+        private void ProgramRun(string command)
+        {
+            this.ProgramGrammarRule.CmdSetRuleState("ProgramRule", SpeechRuleState.SGDSInactive);
+            DataRow[] rows = list.dt.Select("voice = '" + command + "'");
+            Process.Start((string)rows[0][1]);
+            label1_MouseUp(null, null);
         }
 
         //テキストクリック
