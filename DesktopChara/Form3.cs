@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Drawing;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace DesktopChara
 {
     public partial class Form3 : Form
     {
+        [DllImport("SpeechDialog.dll")]
+        public extern static bool SpeechDlg(IntPtr Handle, [MarshalAs(UnmanagedType.LPArray)] byte[] res);
+
         public Form3()
         {
             InitializeComponent();
@@ -36,6 +40,17 @@ namespace DesktopChara
         {
             //レジストリの読み込み
             this.Location = new Point((int)Program.regkey.GetValue("posX") - this.Size.Width, (int)Program.regkey.GetValue("posY") - this.Size.Height);
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            bool res;
+            byte[] res_byte = new byte[4096];
+            res = SpeechDlg(IntPtr.Zero, res_byte);
+            if (res)
+            {
+                textBox1.Text = System.Text.Encoding.GetEncoding("shift_jis").GetString(res_byte);           
+            }
         }
     }
 }

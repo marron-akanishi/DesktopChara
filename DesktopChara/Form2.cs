@@ -34,6 +34,7 @@ namespace DesktopChara
             Program.regkey.SetValue("APISecret", textBox2.Text);
             Program.regkey.SetValue("AccessToken", textBox3.Text);
             Program.regkey.SetValue("AccessSecret", textBox4.Text);
+            Program.regkey.SetValue("UseSpeech", Program.UseSpeech ? 1 : 0);
         }
 
         private void Form2_Load(object sender, EventArgs e)
@@ -44,6 +45,7 @@ namespace DesktopChara
             textBox2.Text = (string)Program.regkey.GetValue("APISecret");
             textBox3.Text = (string)Program.regkey.GetValue("AccessToken");
             textBox4.Text = (string)Program.regkey.GetValue("AccessSecret");
+            checkBox1.Checked = (int)Program.regkey.GetValue("UseSpeech") == 1 ? true : false;
             //スキンデータの読み込み
             string path = Program.basepath + "skin.ini";
             skindata = new IniFile(path);
@@ -52,6 +54,11 @@ namespace DesktopChara
             path = path.Replace("skin.ini",skinicon);
             label2.Text = skinname;
             pictureBox1.Image = Image.FromFile(path);
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            Program.UseSpeech = checkBox1.Checked;
         }
     }
 }
