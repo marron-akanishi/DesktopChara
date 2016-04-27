@@ -16,6 +16,7 @@ namespace DesktopChara
             label1.Text = "" + (140 - textBox1.TextLength) + "";
         }
 
+        //OK
         private void button1_Click(object sender, EventArgs e)
         {
             Program.tweetdata = textBox1.Text;
@@ -23,6 +24,7 @@ namespace DesktopChara
             this.Dispose();
         }
 
+        //キャンセル
         private void button2_Click(object sender, EventArgs e)
         {
             Program.tweetdata = "";

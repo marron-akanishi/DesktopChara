@@ -503,7 +503,8 @@ namespace DesktopChara
                     tweet.ShowDialog(this);
                     if (Program.tweetdata != "" && twitter != null)
                     {
-                        label1.Text = "つぶやき中";
+                        label1.Text = "ツイートを送信中";
+                        label1.Refresh();
                         try
                         {
                             twitter.Statuses.Update(new { status = Program.tweetdata });
@@ -551,7 +552,6 @@ namespace DesktopChara
                     mode = "setting";
                     //現在の位置を一旦保存
                     RegSave();
-                    lasttype = Program.type;
                     show(filelist.GetPath("kusonemi", 0));
                     Form2 setting = new Form2();
                     setting.ShowDialog(this);
@@ -648,12 +648,15 @@ namespace DesktopChara
                 this.Visible = false;
                 this.WindowState = FormWindowState.Minimized;
                 this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
+                timer.Enabled = false;
             }
             else
             {
                 this.Visible = true;
                 this.WindowState = FormWindowState.Normal;
                 this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSActive);
+                UpdateTime(null, null);
+                timer.Enabled = true;
             }
         }
     }
