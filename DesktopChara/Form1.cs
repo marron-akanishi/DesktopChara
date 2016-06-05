@@ -323,6 +323,12 @@ namespace DesktopChara
                         show(filelist.GetPath("change", 0));
                         lastno = 0;
                     }
+                    //バグ回避
+                    else if (Program.type == "what")
+                    {
+                        show(filelist.GetPath("start", 0));
+                        lastno = 0;
+                    }
                     break;
             }
         }
@@ -410,9 +416,12 @@ namespace DesktopChara
         //レジストリへの書き込み
         private void RegSave()
         {
+            if (Program.regkey == null) Program.regkey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\DesktopChara");
             Program.regkey.SetValue("posX", this.Location.X);
             Program.regkey.SetValue("posY", this.Location.Y);
             Program.regkey.SetValue("skin", Program.skinfolder);
+            //ちょいと追加
+            Program.regkey.SetValue("UseSpeech", Program.UseSpeech ? 1 : 0);
         }
 
         //レジストリの読み込み
