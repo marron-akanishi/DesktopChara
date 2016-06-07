@@ -14,7 +14,7 @@ namespace DesktopChara
         public static string skinfolder = "default";
         public static string type = @"start";
         public static string tweetdata = "";
-        public static bool UseSpeech = true;
+        public static bool UseSpeech = false;
 
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。

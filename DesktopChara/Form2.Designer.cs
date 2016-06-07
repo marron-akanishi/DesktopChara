@@ -134,7 +134,7 @@
             // textBox1
             // 
             this.textBox1.Location = new System.Drawing.Point(82, 73);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(2);
             this.textBox1.Name = "textBox1";
             this.textBox1.Size = new System.Drawing.Size(186, 19);
             this.textBox1.TabIndex = 8;
@@ -142,7 +142,7 @@
             // textBox2
             // 
             this.textBox2.Location = new System.Drawing.Point(82, 94);
-            this.textBox2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBox2.Margin = new System.Windows.Forms.Padding(2);
             this.textBox2.Name = "textBox2";
             this.textBox2.Size = new System.Drawing.Size(186, 19);
             this.textBox2.TabIndex = 9;
@@ -160,7 +160,7 @@
             // textBox3
             // 
             this.textBox3.Location = new System.Drawing.Point(82, 114);
-            this.textBox3.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBox3.Margin = new System.Windows.Forms.Padding(2);
             this.textBox3.Name = "textBox3";
             this.textBox3.Size = new System.Drawing.Size(186, 19);
             this.textBox3.TabIndex = 11;
@@ -168,7 +168,7 @@
             // textBox4
             // 
             this.textBox4.Location = new System.Drawing.Point(82, 135);
-            this.textBox4.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBox4.Margin = new System.Windows.Forms.Padding(2);
             this.textBox4.Name = "textBox4";
             this.textBox4.Size = new System.Drawing.Size(186, 19);
             this.textBox4.TabIndex = 12;
@@ -200,7 +200,7 @@
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Top;
             this.tabControl1.Location = new System.Drawing.Point(0, 0);
-            this.tabControl1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabControl1.Margin = new System.Windows.Forms.Padding(2);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(285, 217);
@@ -222,9 +222,9 @@
             this.tabPage1.Controls.Add(this.textBox1);
             this.tabPage1.Controls.Add(this.label5);
             this.tabPage1.Location = new System.Drawing.Point(4, 22);
-            this.tabPage1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage1.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage1.Name = "tabPage1";
-            this.tabPage1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage1.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage1.Size = new System.Drawing.Size(277, 191);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "設定";
@@ -234,9 +234,9 @@
             // 
             this.tabPage2.Controls.Add(this.textBox5);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
-            this.tabPage2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage2.Margin = new System.Windows.Forms.Padding(2);
             this.tabPage2.Name = "tabPage2";
-            this.tabPage2.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tabPage2.Padding = new System.Windows.Forms.Padding(2);
             this.tabPage2.Size = new System.Drawing.Size(277, 191);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "コマンド一覧";
@@ -246,13 +246,14 @@
             // 
             this.textBox5.Dock = System.Windows.Forms.DockStyle.Fill;
             this.textBox5.Location = new System.Drawing.Point(2, 2);
-            this.textBox5.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBox5.Margin = new System.Windows.Forms.Padding(2);
             this.textBox5.Multiline = true;
             this.textBox5.Name = "textBox5";
             this.textBox5.ReadOnly = true;
             this.textBox5.Size = new System.Drawing.Size(273, 187);
             this.textBox5.TabIndex = 0;
-            this.textBox5.Text = "プログラムを実行したい\r\nツイートしたい\r\n検索したい\r\nバッテリー残量は\r\n時計に戻して\r\n君の名前は\r\nプログラムリスト更新\r\n設定を開いて\r\n終了";
+            this.textBox5.Text = "プログラムを実行したい\r\nツイートしたい\r\n検索したい\r\nバッテリー残量は\r\n時計に戻して\r\n君の名前は\r\nプログラムリスト更新\r\n設定を開いて\r\n疲れた\r\n終了" +
+    "";
             // 
             // Form2
             // 

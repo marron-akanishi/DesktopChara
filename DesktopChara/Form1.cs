@@ -184,6 +184,7 @@ namespace DesktopChara
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "設定を開いて");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "時計に戻して");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "君の名前は");
+            this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "疲れた");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "終了");
 
             //ルールを反映させる。
@@ -609,6 +610,12 @@ namespace DesktopChara
                 case "君の名前は":
                     show(filelist.GetPath("tere", 0));
                     label1.Text = "鳥海 有栖だよ";
+                    mode = "name";
+                    if (Program.UseSpeech) this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
+                    break;
+                case "疲れた":
+                    show(filelist.GetPath("tere", 0));
+                    label1.Text = "大丈夫？\nおっぱい揉む？";
                     mode = "name";
                     if (Program.UseSpeech) this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
                     break;
