@@ -411,7 +411,7 @@ namespace DesktopChara
         public void UpdateTime(object sender, EventArgs e)
         {
             DateTime dtNow = DateTime.Now;
-            label1.Text = dtNow.ToString("yyyy/MM/dd") + "\n" + dtNow.ToString("HH:mm:ss");
+            label1.Text = dtNow.ToString("yyyy/MM/dd(ddd)") + "\n" + dtNow.ToString("HH:mm:ss");
         }
 
         //レジストリへの書き込み
