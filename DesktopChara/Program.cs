@@ -71,8 +71,9 @@ namespace DesktopChara
             }
             catch (Exception)
             {
-                MessageBox.Show("ファイルリスト参照中にエラーが発生しました\nプログラムを終了します\ntype=" + type + ",no=" + no, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Application.Exit();
+                MessageBox.Show("ファイルリスト参照中にエラーが発生しました\n初期画像に戻します\ntype=" + type + ",no=" + no, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                DataRow[] rows = dt.Select("type = 'start'");
+                path = Program.basepath + (string)rows[0][0];
             }
             if (type != "ballon") Program.type = type;
             return path;

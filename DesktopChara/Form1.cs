@@ -327,8 +327,10 @@ namespace DesktopChara
                     //バグ回避
                     else if (Program.type == "what")
                     {
-                        show(filelist.GetPath("start", 0));
-                        lastno = 0;
+                        if (timer.Enabled == true) {
+                            show(filelist.GetPath("start", 0));
+                            lastno = 0;
+                        }
                     }
                     break;
             }
@@ -463,21 +465,13 @@ namespace DesktopChara
             if (textBox1.Text != @"")
             {
 
-                if (mode == "voice" && !Program.UseSpeech)
+                if (mode != "file" && !Program.UseSpeech)
                 {
                     SpeechTextBranch(textBox1.Text);
                     textBox1.Text = @"";
                     return;
                 }
-                try
-                {
-                    Process.Start(textBox1.Text);
-                }
-                catch
-                {
-                    MessageBox.Show("実行出来なかったよ\n" + textBox1.Text, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                if(ProgramRun(textBox1.Text) == -1) return;
                 textBox1.Text = @"";
                 label1_MouseUp(null, null);
             }
@@ -524,6 +518,10 @@ namespace DesktopChara
                         textBox1.Text = "";
                     }
                     mode = "twitter";
+                    if(twitter == null) {
+                        MessageBox.Show("TwitterAPIが指定されていません", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        label1_MouseUp(null, null);
+                    }
                     RegSave();
                     Form3 tweet = new Form3();
                     tweet.ShowDialog(this);
@@ -559,12 +557,6 @@ namespace DesktopChara
                     break;
                 case "バッテリー残量は":
                     show(filelist.GetPath("find", 0));
-                    if (!Program.UseSpeech)
-                    {
-                        textBox1.Visible = false;
-                        button1.Visible = false;
-                        textBox1.Text = "";
-                    }
                     PowerLineStatus pls = SystemInformation.PowerStatus.PowerLineStatus;
                     if (pls == PowerLineStatus.Online)
                     {
@@ -615,6 +607,11 @@ namespace DesktopChara
                     break;
                 case "疲れた":
                     show(filelist.GetPath("tere", 0));
+                    if (!Program.UseSpeech) {
+                        textBox1.Visible = false;
+                        button1.Visible = false;
+                        textBox1.Text = "";
+                    }
                     label1.Text = "大丈夫？\nおっぱい揉む？";
                     mode = "name";
                     if (Program.UseSpeech) this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
@@ -635,19 +632,32 @@ namespace DesktopChara
         }
 
         //プログラム実行音声認識
-        private void ProgramRun(string command)
+        private int ProgramRun(string command)
         {
             this.ProgramGrammarRule.CmdSetRuleState("ProgramRule", SpeechRuleState.SGDSInactive);
-            DataRow[] rows = list.dt.Select("voice = '" + command + "'");
-            try
-            {
-                Process.Start((string)rows[0][1]);
+            while (true) {
+                if (!Program.UseSpeech) {
+                    try {
+                        Process.Start(command);
+                        break;
+                    }
+                    catch {
+                        goto listcheck;
+                    }
+                }
+listcheck:
+                DataRow[] rows = list.dt.Select("voice = '" + command + "'");
+                try {
+                    Process.Start((string)rows[0][1]);
+                    break;
+                }
+                catch {
+                    MessageBox.Show("実行出来なかったよ\n" + command, "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return -1;
+                }
             }
-            catch
-            {
-                MessageBox.Show("実行出来なかったよ\n" + (string)rows[0][1], "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            label1_MouseUp(null, null);
+            if (Program.UseSpeech) label1_MouseUp(null, null);
+            return 0;
         }
 
         //テキストクリック
@@ -668,6 +678,7 @@ namespace DesktopChara
                     button1.Location = new Point(136, 40);
                     textBox1.Visible = true;
                     button1.Visible = true;
+                    textBox1.Focus();
                 }
                 //音声認識開始
                 if (Program.UseSpeech) this.ControlGrammarRule.CmdSetRuleState("ControlRule", SpeechRuleState.SGDSActive);
