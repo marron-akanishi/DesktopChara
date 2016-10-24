@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using System.Data;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Drawing;
 
 namespace DesktopChara
 {
@@ -15,6 +16,7 @@ namespace DesktopChara
         public static string type = @"start";
         public static string tweetdata = "";
         public static bool UseSpeech = false;
+        public static Point DispSize;
 
         /// <summary>
         /// アプリケーションのメイン エントリ ポイントです。
@@ -32,6 +34,14 @@ namespace DesktopChara
             basepath = basepath.Replace("DesktopChara.exe", @"skins\");
 #endif
             basepath = basepath + skinfolder + @"\";
+            //全ディスプレイを合わせたサイズを取得する
+            //変数初期化
+            DispSize.X = 0;
+            DispSize.Y = 0;
+            foreach (System.Windows.Forms.Screen s in System.Windows.Forms.Screen.AllScreens) {
+                DispSize.X += s.Bounds.Width;
+                DispSize.Y += s.Bounds.Height;
+            }
             Application.Run(new Form1());
         }
     }

@@ -436,8 +436,8 @@ namespace DesktopChara
                 return;
             }
             this.Location = new Point((int)Program.regkey.GetValue("posX"), (int)Program.regkey.GetValue("posY"));
-            if(this.Location.X >= System.Windows.Forms.Screen.PrimaryScreen.Bounds.Width || 
-                this.Location.Y >= System.Windows.Forms.Screen.PrimaryScreen.Bounds.Height || this.Location.X < 0 || this.Location.Y < 0)
+            if(this.Location.X >= Program.DispSize.X || 
+                this.Location.Y >= Program.DispSize.Y || this.Location.X < 0 || this.Location.Y < 0)
             {
                 this.Location = new Point(100, 100);
             }
