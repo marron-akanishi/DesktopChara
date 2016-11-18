@@ -10,7 +10,7 @@ namespace DesktopChara
 {
     static class Program
     {
-        public static string basepath = Application.ExecutablePath;
+        public static string basepath = Application.StartupPath;
         public static Microsoft.Win32.RegistryKey regkey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\DesktopChara",true);
         public static string skinfolder = "default";
         public static string type = @"start";
@@ -28,14 +28,8 @@ namespace DesktopChara
             Application.SetCompatibleTextRenderingDefault(false);
             //前回設定したスキンを読み込む
             if (regkey != null) skinfolder = (string)regkey.GetValue("skin");
-#if DEBUG
-            basepath = basepath.Replace("DesktopChara.EXE", @"skins\");
-#else
-            basepath = basepath.Replace("DesktopChara.exe", @"skins\");
-#endif
-            basepath = basepath + skinfolder + @"\";
+            basepath = basepath + @"\skins\" + skinfolder + @"\";
             //全ディスプレイを合わせたサイズを取得する
-            //変数初期化
             DispSize.X = 0;
             DispSize.Y = 0;
             foreach (System.Windows.Forms.Screen s in System.Windows.Forms.Screen.AllScreens) {

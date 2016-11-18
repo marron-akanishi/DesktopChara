@@ -14,29 +14,6 @@ namespace DesktopChara
             InitializeComponent();
         }
 
-        //OK
-        private void button1_Click(object sender, EventArgs e)
-        {
-            RegSave();
-            this.Dispose();
-        }
-
-        //キャンセル
-        private void button2_Click(object sender, EventArgs e)
-        {
-            this.Dispose();
-        }
-
-        //レジストリ保存
-        private void RegSave()
-        {
-            Program.regkey.SetValue("APIKey", textBox1.Text);
-            Program.regkey.SetValue("APISecret", textBox2.Text);
-            Program.regkey.SetValue("AccessToken", textBox3.Text);
-            Program.regkey.SetValue("AccessSecret", textBox4.Text);
-            Program.regkey.SetValue("UseSpeech", Program.UseSpeech ? 1 : 0);
-        }
-
         private void Form2_Load(object sender, EventArgs e)
         {
             //レジストリの読み込み
@@ -59,6 +36,29 @@ namespace DesktopChara
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             Program.UseSpeech = checkBox1.Checked;
+        }
+
+        //OK
+        private void button1_Click(object sender, EventArgs e)
+        {
+            RegSave();
+            this.Dispose();
+        }
+
+        //キャンセル
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Dispose();
+        }
+
+        //レジストリ保存
+        private void RegSave()
+        {
+            Program.regkey.SetValue("APIKey", textBox1.Text);
+            Program.regkey.SetValue("APISecret", textBox2.Text);
+            Program.regkey.SetValue("AccessToken", textBox3.Text);
+            Program.regkey.SetValue("AccessSecret", textBox4.Text);
+            Program.regkey.SetValue("UseSpeech", Program.UseSpeech ? 1 : 0);
         }
     }
 }

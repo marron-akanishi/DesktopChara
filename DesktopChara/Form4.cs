@@ -16,6 +16,7 @@ namespace DesktopChara
         public Form4()
         {
             InitializeComponent();
+            this.Activate();
         }
 
         private void Form4_Load(object sender, EventArgs e)

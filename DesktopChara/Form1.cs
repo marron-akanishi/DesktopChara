@@ -20,32 +20,37 @@ namespace DesktopChara
         private string mode = "clock";
         private Timer timer;
         private Tokens twitter;
+
         //モード切替用(Dictation実装見送り)
         //音声認識オブジェクト
-        private SpeechLib.SpInProcRecoContext AlwaysRule = null;
+        private SpInProcRecoContext AlwaysRule = null;
         //音声認識のための言語モデル
-        private SpeechLib.ISpeechRecoGrammar AlwaysGrammarRule = null;
+        private ISpeechRecoGrammar AlwaysGrammarRule = null;
         //音声認識のための言語モデルのルール
-        private SpeechLib.ISpeechGrammarRule AlwaysGrammarRuleGrammarRule = null;
+        private ISpeechGrammarRule AlwaysGrammarRuleGrammarRule = null;
+
         //操作用
         //音声認識オブジェクト
-        private SpeechLib.SpInProcRecoContext ControlRule = null;
+        private SpInProcRecoContext ControlRule = null;
         //音声認識のための言語モデル
-        private SpeechLib.ISpeechRecoGrammar ControlGrammarRule = null;
+        private ISpeechRecoGrammar ControlGrammarRule = null;
         //音声認識のための言語モデルのルール
-        private SpeechLib.ISpeechGrammarRule ControlGrammarRuleGrammarRule = null;
+        private ISpeechGrammarRule ControlGrammarRuleGrammarRule = null;
+
         //プログラム起動用
         //音声認識オブジェクト
-        private SpeechLib.SpInProcRecoContext ProgramRule = null;
+        private SpInProcRecoContext ProgramRule = null;
         //音声認識のための言語モデル
-        private SpeechLib.ISpeechRecoGrammar ProgramGrammarRule = null;
+        private ISpeechRecoGrammar ProgramGrammarRule = null;
         //音声認識のための言語モデルのルール
-        private SpeechLib.ISpeechGrammarRule ProgramGrammarRuleGrammarRule = null;
+        private ISpeechGrammarRule ProgramGrammarRuleGrammarRule = null;
 
+        //コンストラクタ
         public Form1()
         {
             InitializeComponent();
-            //ShowInTaskbar = false;
+            //タスクバーにアイコンを表示しない
+            ShowInTaskbar = false;
             timer = new Timer();
             timer.Tick += new EventHandler(UpdateTime);
             timer.Interval = 1000;
@@ -83,7 +88,7 @@ namespace DesktopChara
         private void AlwaysSpeechInit()
         {
             //ルール認識 音声認識オブジェクトの生成
-            this.AlwaysRule = new SpeechLib.SpInProcRecoContext();
+            this.AlwaysRule = new SpInProcRecoContext();
             bool hit = false;
             foreach (SpObjectToken recoperson in this.AlwaysRule.Recognizer.GetRecognizers()) //'Go through the SR enumeration
             {
@@ -111,8 +116,9 @@ namespace DesktopChara
                 {
                     //音声認識終了
                     this.AlwaysGrammarRule.CmdSetRuleState("AlwaysRule", SpeechRuleState.SGDSInactive);
-                    //アクティブにする
-                    this.Focus();
+                    //ウィンドウをアクティブにする
+                    this.Activate();
+                    //聞き取り開始
                     label1_MouseUp(null, null);
                 };
             //言語モデルの作成
@@ -131,7 +137,7 @@ namespace DesktopChara
         private void ControlSpeechInit()
         {
             //ルール認識 音声認識オブジェクトの生成
-            this.ControlRule = new SpeechLib.SpInProcRecoContext();
+            this.ControlRule = new SpInProcRecoContext();
             bool hit = false;
             foreach (SpObjectToken recoperson in this.ControlRule.Recognizer.GetRecognizers()) //'Go through the SR enumeration
             {
@@ -193,7 +199,7 @@ namespace DesktopChara
         private void ProgramSpeechInit()
         {
             //ルール認識 音声認識オブジェクトの生成
-            this.ProgramRule = new SpeechLib.SpInProcRecoContext();
+            this.ProgramRule = new SpInProcRecoContext();
             bool hit = false;
             foreach (SpObjectToken recoperson in this.ProgramRule.Recognizer.GetRecognizers()) //'Go through the SR enumeration
             {
@@ -246,6 +252,16 @@ namespace DesktopChara
 
             //ルールを反映させる。
             this.ProgramGrammarRule.Rules.Commit();
+        }
+        //マイクから読み取るため、マイク用のデバイスを指定する
+        private SpObjectToken CreateMicrofon()
+        {
+            SpeechLib.SpObjectTokenCategory objAudioTokenCategory = new SpeechLib.SpObjectTokenCategory();
+            objAudioTokenCategory.SetId(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech Server\v11.0\AudioInput", false);
+            SpObjectToken objAudioToken = new SpObjectToken();
+            objAudioToken.SetId(objAudioTokenCategory.Default, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech Server\v11.0\AudioInput", false);
+            //return null;
+            return objAudioToken;
         }
 
         //表示前処理
@@ -397,18 +413,6 @@ namespace DesktopChara
             this.TransparencyKey = BackColor;
         }
 
-        //ウィンドウの大きさを画像の大きさに変更
-        private void size_change(string path)
-        {
-            //元画像の縦横サイズを調べる
-            System.Drawing.Bitmap bmpSrc = new System.Drawing.Bitmap(@path);
-            int width = bmpSrc.Width;
-            int height = bmpSrc.Height;
-            bmpSrc.Dispose();
-            //ウィンドウのサイズを変更
-            this.Size = new Size(width, height + 54);
-        }
-
         //時計の描画
         public void UpdateTime(object sender, EventArgs e)
         {
@@ -444,12 +448,15 @@ namespace DesktopChara
             Program.UseSpeech = (int)Program.regkey.GetValue("UseSpeech") == 1 ? true : false;
         }
 
-        //長押しキー取得
+        //長押しキー取得(移動用Ctrlキー)
         private void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             switch (e.KeyCode)
             {
                 case Keys.ControlKey:
+                    //マウスがウィンドウに乗ってるときのみ実行
+                    if (Control.MousePosition.X < this.Location.X || Control.MousePosition.X > this.Location.X + this.Size.Width ||
+                        Control.MousePosition.Y < this.Location.Y || Control.MousePosition.Y > this.Location.Y + this.Size.Height) break;
                     this.lastMousePosition = Control.MousePosition;
                     this.mouseCapture = true;
                     //この間だけ画像変更
@@ -475,17 +482,6 @@ namespace DesktopChara
                 textBox1.Text = @"";
                 label1_MouseUp(null, null);
             }
-        }
-
-        //マイクから読み取るため、マイク用のデバイスを指定する.
-        private SpeechLib.SpObjectToken CreateMicrofon()
-        {
-            SpeechLib.SpObjectTokenCategory objAudioTokenCategory = new SpeechLib.SpObjectTokenCategory();
-            objAudioTokenCategory.SetId(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech Server\v11.0\AudioInput", false);
-            SpeechLib.SpObjectToken objAudioToken = new SpeechLib.SpObjectToken();
-            objAudioToken.SetId(objAudioTokenCategory.Default, @"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Speech Server\v11.0\AudioInput", false);
-            //return null;
-            return objAudioToken;
         }
         
         //音声認識分岐
@@ -660,7 +656,7 @@ listcheck:
             return 0;
         }
 
-        //テキストクリック
+        //テキストクリック(音声認識時もここに飛ぶ)
         private void label1_MouseUp(object sender, MouseEventArgs e)
         {
             if (e != null && e.Button == MouseButtons.Right) return;

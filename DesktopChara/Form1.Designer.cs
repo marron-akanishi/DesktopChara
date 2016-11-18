@@ -68,7 +68,7 @@
             this.label1.Font = new System.Drawing.Font("Meiryo UI", 13.8F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
             this.label1.Location = new System.Drawing.Point(12, 9);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(204, 30);
+            this.label1.Size = new System.Drawing.Size(162, 24);
             this.label1.TabIndex = 2;
             this.label1.Text = "9文字x2行ぐらい？";
             this.label1.MouseUp += new System.Windows.Forms.MouseEventHandler(this.label1_MouseUp);
@@ -87,7 +87,7 @@
             // 
             this.textBox1.Location = new System.Drawing.Point(12, 63);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(118, 22);
+            this.textBox1.Size = new System.Drawing.Size(118, 19);
             this.textBox1.TabIndex = 4;
             // 
             // notifyIcon1
@@ -99,6 +99,8 @@
             // 
             // Form1
             // 
+            this.BackColor = System.Drawing.SystemColors.Control;
+            this.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.ClientSize = new System.Drawing.Size(199, 263);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.textBox1);
