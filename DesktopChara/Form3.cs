@@ -23,9 +23,10 @@ namespace DesktopChara
         {
             InitializeComponent();
             VoiceCommandInit();
+            this.Activate();
         }
 
-        //コンストラクター
+        //音声認識初期化
         private void VoiceCommandInit() {
             //ルール認識 音声認識オブジェクトの生成
             this.DialogRule = new SpInProcRecoContext();

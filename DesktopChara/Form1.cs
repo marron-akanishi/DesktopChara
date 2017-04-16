@@ -5,11 +5,15 @@ using System.Diagnostics;
 using SpeechLib;
 using CoreTweet;
 using System.Data;
+using System.Runtime.InteropServices;
 
 namespace DesktopChara
 {
     public partial class Form1 : Form
     {
+        [DllImport("user32")]
+        public static extern void LockWorkStation();
+
         private Random rnd;
         private Filelist filelist;
         private Programlist list;
@@ -185,6 +189,7 @@ namespace DesktopChara
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "プログラムを実行したい");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "ツイートしたい");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "検索したい");
+            this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "席をはずす");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "バッテリー残量は");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "プログラムリスト更新");
             this.ControlGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "設定を開いて");
@@ -249,6 +254,7 @@ namespace DesktopChara
             {
                 this.ProgramGrammarRuleGrammarRule.InitialState.AddWordTransition(null, voice);
             }
+            this.ProgramGrammarRuleGrammarRule.InitialState.AddWordTransition(null, "時計に戻して");
 
             //ルールを反映させる。
             this.ProgramGrammarRule.Rules.Commit();
@@ -401,7 +407,7 @@ namespace DesktopChara
         }
 
         //画像を表示する
-        public void show(string path)
+        private void show(string path)
         {
             //キャラ設置
             if (pictureBox2.Image != null) pictureBox2.Image.Dispose();
@@ -410,11 +416,11 @@ namespace DesktopChara
             if (pictureBox1.Image != null) pictureBox1.Image.Dispose();
             pictureBox1.Image = Image.FromFile(filelist.GetPath("ballon", 0));
             //ウィンドウ透過
-            this.TransparencyKey = BackColor;
+            this.TransparencyKey = BackColor; //透過pngならこれでいける？
         }
 
         //時計の描画
-        public void UpdateTime(object sender, EventArgs e)
+        private void UpdateTime(object sender, EventArgs e)
         {
             DateTime dtNow = DateTime.Now;
             label1.Text = dtNow.ToString("yyyy/MM/dd(ddd)") + "\n" + dtNow.ToString("HH:mm:ss");
@@ -551,6 +557,19 @@ namespace DesktopChara
                     search.ShowDialog(this);
                     label1_MouseUp(null, null);
                     break;
+                case "席をはずす":
+                    show(filelist.GetPath("smile", 0));
+                    label1.Text = "いってらっしゃい";
+                    try {
+                        DateTime dtNow = DateTime.Now;
+                        twitter.Statuses.Update(new { status = "ご主人が席を外されました【有栖ちゃん】\n" + dtNow.ToString("HH:mm:ss") });
+                    }
+                    catch {
+                        MessageBox.Show("ツイートに失敗しました", "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    label1_MouseUp(null, null);
+                    LockWorkStation();
+                    break;
                 case "バッテリー残量は":
                     show(filelist.GetPath("find", 0));
                     PowerLineStatus pls = SystemInformation.PowerStatus.PowerLineStatus;
@@ -631,6 +650,10 @@ namespace DesktopChara
         private int ProgramRun(string command)
         {
             this.ProgramGrammarRule.CmdSetRuleState("ProgramRule", SpeechRuleState.SGDSInactive);
+            if (command == "時計に戻して") {
+                label1_MouseUp(null, null);
+                return 0;
+            }
             while (true) {
                 if (!Program.UseSpeech) {
                     try {
